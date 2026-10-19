@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thales Currículo</title>
+<style>
+:root{color-scheme:dark;--bg:#0a1010;--hill:#2d2f45;--ice:#cfefff;--cyan:#00ffff;--line:#8fb8d8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;height:100%;overflow:hidden;background:linear-gradient(#0a1010 0%,#0a1010 60%,#2a0a16 100%);font-family:"Trebuchet MS",system-ui,sans-serif;color:var(--ice)}
+svg{width:100%;height:100%;display:block}
+.sq{animation:beat .6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes beat{50%{transform:scale(1.18)}}
+.node{cursor:pointer}
+.node .shape{transition:transform .2s;transform-box:fill-box;transform-origin:center}
+.node:hover .shape,.node.on .shape{transform:scale(1.2)}
+.lbl{font-size:26px;letter-spacing:4px;fill:var(--ice);text-anchor:middle;opacity:.85}
+.hint{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:0;right:0;text-align:center;font-size:13px;letter-spacing:2px;opacity:.55;pointer-events:none}
+#panel{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,8,.6);padding:20px}
+#panel.show{display:flex}
+.card{max-width:560px;width:100%;max-height:80%;overflow:auto;background:#101424;border:2px solid var(--cyan);box-shadow:0 0 30px rgba(0,255,255,.25);padding:28px 30px}
+.card h2{margin:0 0 14px;color:var(--cyan);letter-spacing:4px;font-size:20px}
+.card p,.card li{line-height:1.6;font-size:16px;margin:0 0 8px}
+.card ul{padding-left:20px;margin:0}
+.card small{display:block;margin-top:16px;opacity:.5;letter-spacing:1px}
+.tag{display:inline-block;border:1px solid var(--line);padding:3px 10px;margin:0 6px 8px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="hint">← ↑ → ↓ / WASD PARA MOVER · ENTER ABRE · ESC FECHA · OU CLIQUE NAS FASES</div>
+<svg id="scene" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMax meet"></svg>
+<div id="panel"><div class="card" id="card"></div></div>
+
+<script>
+//Conteudo das Fases
+const CONTENT = {
+  obj: {title:"Objetivo Profissional", html:"<p>Estudante de Análise e Desenvolvimento de Sistemas em busca de uma oportunidade na área de desenvolvimento de software, para aplicar o que aprendo em projetos reais e continuar evoluindo tecnicamente.</p>"},
+  for: {title:"Formação Acadêmica", html:"<p><b>Análise e Desenvolvimento de Sistemas</b></p><p>UNIVC</p><p>Conclusão prevista: dezembro de 2026</p>"},
+  exp: {title:"Experiência Profissional", html:"<p>Desenvolvedor solo em projetos pessoais, praticando criação de aplicações do zero e uso de ferramentas modernas com apoio de IA.</p>"},
+  con: {title:"Conhecimentos", html:"<span class='tag'>HTML</span><span class='tag'>CSS</span><span class='tag'>JavaScript</span><span class='tag'>Python (intermediário)</span><span class='tag'>Dart (básico)</span>"}
+};
+//MAPA
+const N = {
+  start:{x:960,y:640},
+  for:{x:960,y:950,label:"FORMAÇÃO"},
+  obj:{x:520,y:880,label:"OBJETIVO"},
+  exp:{x:1400,y:880,label:"EXPERIÊNCIA"},
+  con:{x:1780,y:990,label:"CONHECIMENTOS"}
+};
+const E = [["start","for"],["for","obj"],["for","exp"],["exp","con"]];
+const adj = {}; Object.keys(N).forEach(k=>adj[k]=[]);
+E.forEach(([a,b])=>{adj[a].push(b);adj[b].push(a)});
+
+const NS="http://www.w3.org/2000/svg", svg=document.getElementById("scene");
+const h=(s)=>{svg.insertAdjacentHTML("beforeend",s)};
+const pent=(r)=>[0,1,2,3,4].map(i=>{const a=-Math.PI/2+i*2*Math.PI/5;return (r*Math.cos(a)).toFixed(1)+","+(r*Math.sin(a)).toFixed(1)}).join(" ");
+
+h(`<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1010"/><stop offset=".6" stop-color="#0a1010"/><stop offset="1" stop-color="#2a0a16"/></linearGradient>
+<linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#33364f"/><stop offset="1" stop-color="#1c1a2b"/></linearGradient></defs>
+<rect width="1920" height="1080" fill="url(#bg)"/>`);
+// Navio
+h(`<g transform="translate(990 430)"><path d="M-22-104h40q8 0 8 10v10q0 6-8 6h-30z" fill="#dff6ff"/><path d="M-48-58h82q10 22 0 56l-6 10h-72z" fill="#d5f3ff"/><path d="M-68 34h140l-8 10q-4 28-60 30-52 0-62-34z" fill="#8cc8ff"/><path d="M-60 66L58 34" stroke="#111" stroke-width="7"/><circle cx="-28" cy="62" r="16" fill="#111"/><rect x="18" y="58" width="20" height="5" fill="#111"/></g>`);
+// Colina
+h(`<circle cx="610" cy="1080" r="350" fill="#1e1a2a"/><circle cx="1415" cy="1080" r="350" fill="#1e1a2a"/>
+<circle cx="990" cy="1060" r="420" fill="url(#hl)" opacity=".95"/>
+<circle cx="560" cy="1190" r="270" fill="#2a2c40"/><circle cx="1420" cy="1190" r="270" fill="#2a2c40"/><circle cx="990" cy="1250" r="300" fill="#2f3250"/>`);
+// Arvores
+const tree=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0-130L60-40H-60z" fill="#383a5a"/><path d="M0-90L70 0H-70z" fill="#383a5a"/><rect x="-8" y="-120" width="16" height="120" fill="#6a9fba"/><path d="M-8-70l-24-12M8-60l24-12M-8-30l-24-12M8-20l24-12" stroke="#6a9fba" stroke-width="8"/></g>`;
+h(tree(1415,760,1.5)+tree(780,920,1));
+// edges
+E.forEach(([a,b])=>h(`<line x1="${N[a].x}" y1="${N[a].y}" x2="${N[b].x}" y2="${N[b].y}" stroke="#bcd6ee" stroke-width="2.5" stroke-dasharray="12 9" opacity=".7"/>`));
+// nodes
+Object.entries(N).forEach(([k,n])=>{
+  if(k==="start")return;
+  h(`<g class="node" data-id="${k}" transform="translate(${n.x} ${n.y})"><g class="shape"><polygon points="${pent(40)}" fill="#14283a" stroke="#0d1a28" stroke-width="6"/><polygon points="${pent(30)}" fill="#bfe6ff"/><path d="M0-14l13 22h-26z" fill="#e8f8ff" stroke="#6fb4e8" stroke-width="3"/></g><text class="lbl" y="82">${n.label}</text></g>`);
+});
+// square
+h(`<rect id="sq" class="sq" width="38" height="38" fill="#00ffff" stroke="#009a9a" stroke-width="3"/>`);
+const sq=document.getElementById("sq");
+
+let cur="start", pos={x:N.start.x,y:N.start.y}, queue=[], moving=false;
+const place=()=>{sq.setAttribute("x",pos.x-19);sq.setAttribute("y",pos.y-19)};
+place();
+
+const panel=document.getElementById("panel"), card=document.getElementById("card");
+function open(id){
+  const c=CONTENT[id]; if(!c)return;
+  card.innerHTML=`<h2>${c.title.toUpperCase()}</h2>${c.html}<small>ESC PARA FECHAR</small>`;
+  panel.classList.add("show");
+  document.querySelectorAll(".node").forEach(n=>n.classList.toggle("on",n.dataset.id===id));
+}
+function close(){panel.classList.remove("show");document.querySelectorAll(".node").forEach(n=>n.classList.remove("on"))}
+panel.addEventListener("click",e=>{if(e.target===panel)close()});
+
+function path(from,to){
+  const prev={[from]:null},q=[from];
+  while(q.length){const c=q.shift();if(c===to)break;adj[c].forEach(n=>{if(!(n in prev)){prev[n]=c;q.push(n)}})}
+  const p=[];for(let c=to;c&&c!==from;c=prev[c])p.unshift(c);return p;
+}
+function goTo(id){
+  close();
+  const from=queue.length?queue[queue.length-1]:cur;
+  if(from===id&&!moving){if(id!=="start")open(id);return}
+  queue=queue.concat(path(from,id));
+  if(!moving)run();
+}
+let last=0;
+function run(){moving=true;last=performance.now();requestAnimationFrame(tick)}
+function tick(t){
+  const dt=Math.min((t-last)/1000,.05);last=t;
+  if(!queue.length){moving=false;if(cur!=="start")open(cur);return}
+  const tg=N[queue[0]],dx=tg.x-pos.x,dy=tg.y-pos.y,d=Math.hypot(dx,dy),step=900*dt;
+  if(d<=step){pos={x:tg.x,y:tg.y};cur=queue.shift()}
+  else{pos.x+=dx/d*step;pos.y+=dy/d*step}
+  place();requestAnimationFrame(tick);
+}
+document.querySelectorAll(".node").forEach(n=>n.addEventListener("click",()=>goTo(n.dataset.id)));
+
+const DIR={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};
+addEventListener("keydown",e=>{
+  if(e.key==="Escape"){close();return}
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();if(!moving&&cur!=="start")open(cur);return}
+  const v=DIR[e.key.length===1?e.key.toLowerCase():e.key];if(!v||moving)return;
+  e.preventDefault();close();
+  let best=null,bs=0.5;
+  adj[cur].forEach(n=>{const dx=N[n].x-N[cur].x,dy=N[n].y-N[cur].y,l=Math.hypot(dx,dy),c=(dx*v[0]+dy*v[1])/l;if(c>bs){bs=c;best=n}});
+  if(best){queue=[best];run()}
+});
+</script>
+</body>
+</html>
